@@ -7,11 +7,8 @@ interface Category { id: string; name: string; icon: string; budget: number; sub
 interface Transaction { id: string; amount: number; note: string; cat_id: string; cat_name: string; sub_name: string; acc_id: string; date: string; }
 
 // --- CLOUD CONFIG ---
-const SUPABASE_URL = 'https://ckydqqbsnoafylzurkoi.supabase.co';
-
-// CRITICAL: Replace the string below with your long key from Supabase Settings > API
-const SUPABASE_KEY = 'sb_publishable_Q0chi7DtM53u-Ah4Ddm9nA_ilok1k98'; 
-
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ckydqqbsnoafylzurkoi.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_Q0chi7DtM53u-Ah4Ddm9nA_ilok1k98'; 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- INDIAN CURRENCY FORMATTER (No Decimals) ---
@@ -27,6 +24,7 @@ const IconBell = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="non
 const IconLogout = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>;
 const IconEye = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 const IconSearch = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
+const IconTrash = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EB5757" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -34,11 +32,6 @@ export default function App() {
   const [selId, setSelId] = useState<string | null>(null);
   const [data, setData] = useState({ acc: [] as Account[], cat: [] as Category[], tx: [] as Transaction[] });
   const [loading, setLoading] = useState(true);
-
-  // Initial Key Check
-  if (SUPABASE_KEY.includes('PASTE_YOUR')) {
-    return <div className="min-h-screen bg-black flex items-center justify-center p-10 text-center text-red-400 font-bold">Please paste your Supabase ANON KEY into App.tsx to start.</div>;
-  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -80,7 +73,7 @@ export default function App() {
     <div className="min-h-screen bg-black text-white font-sans flex justify-center selection:bg-indigo-500/20">
       <div className="w-full max-w-lg md:max-w-xl bg-black min-h-screen relative border-x border-white/5 pb-32 shadow-2xl">
         
-        {view === 'home' && <HomeView totals={totals} tx={data.tx} cats={data.cat} onNew={() => setView('new-tx')} onLogout={() => supabase.auth.signOut()} />}
+        {view === 'home' && <HomeView totals={totals} tx={data.tx} onNew={() => setView('new-tx')} onLogout={() => supabase.auth.signOut()} />}
         {view === 'history' && <HistoryView tx={data.tx} onBack={() => setView('home')} />}
         {view === 'categories' && <CategoryListView cats={data.cat} tx={data.tx} onBack={() => setView('home')} onDetail={(id: string)=>{setSelId(id); setView('cat-detail');}} onAdd={async ()=>{const {data:n}=await supabase.from('categories').insert([{name:'New', budget:0, subs:[], user_id:session.user.id}]).select(); if(n) { setSelId(n[0].id); fetchAll(); setView('edit-cat'); }}} />}
         {view === 'cat-detail' && <CategoryDetailView cat={data.cat.find(c=>c.id===selId)} tx={data.tx.filter(t=>t.cat_id===selId)} onBack={()=>setView('categories')} onEdit={()=>setView('edit-cat')} />}
@@ -105,14 +98,14 @@ export default function App() {
 function TxRow({ t, catName, i }: {t: Transaction, catName: string, i: number}) {
   const color = PETAL_COLORS[i % PETAL_COLORS.length];
   return (
-    <div className="bg-[#121212] p-5 rounded-[2rem] border border-white/5 flex justify-between items-center shadow-sm">
+    <div className="bg-[#121212] p-4 rounded-[1.8rem] border border-white/5 flex justify-between items-center shadow-sm">
       <div className="flex items-center gap-4">
-        <div className={`w-11 h-11 ${color} rounded-full flex items-center justify-center font-black text-white/90 text-sm shadow-md`}>
+        <div className={`w-10 h-10 ${color} rounded-full flex items-center justify-center font-black text-white/90 text-sm shadow-md`}>
           {catName?.charAt(0).toUpperCase() || '?'}
         </div>
         <div>
           <p className="font-bold text-sm text-white">{catName}</p>
-          <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-0.5">
+          <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-0.5 truncate max-w-[150px]">
             {t.sub_name ? `${t.sub_name} • ` : ''}{t.note || t.date}
           </p>
         </div>
@@ -127,7 +120,7 @@ function LoginView({ onLogin }: any) {
   return (
     <div className="min-h-screen bg-black flex flex-col justify-center p-10 space-y-10">
       <div className="text-center space-y-3">
-        <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl font-black mb-4 shadow-xl shadow-indigo-500/20">S</div>
+        <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl font-black mb-4 shadow-xl">S</div>
         <h1 className="text-3xl font-bold tracking-tight text-white">Welcome back</h1>
         <p className="text-white/30 font-bold text-xs uppercase tracking-[0.25em]">Sign in to your build</p>
       </div>
@@ -140,7 +133,7 @@ function LoginView({ onLogin }: any) {
   );
 }
 
-function HomeView({ totals, tx, cats, onNew, onLogout }: any) {
+function HomeView({ totals, tx, onNew, onLogout }: any) {
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto no-scrollbar pb-40">
       <div className="flex justify-between items-center py-2">
@@ -153,7 +146,7 @@ function HomeView({ totals, tx, cats, onNew, onLogout }: any) {
           <button onClick={onLogout} className="p-2 text-white/30 hover:text-white"><IconLogout /></button>
         </div>
       </div>
-      <div className="relative overflow-hidden rounded-[2.5rem] p-8 bg-[#5D5FEF] shadow-2xl shadow-indigo-500/30" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 15px, rgba(255,255,255,0.04) 15px, rgba(255,255,255,0.04) 16px)' }}>
+      <div className="relative overflow-hidden rounded-[2.5rem] p-8 bg-[#5D5FEF] shadow-2xl" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 15px, rgba(255,255,255,0.04) 15px, rgba(255,255,255,0.04) 16px)' }}>
         <div className="relative z-10 space-y-7">
           <div className="flex justify-between items-center text-white/80 font-bold text-[11px] uppercase tracking-[0.2em]"><span>Overall Budget</span><IconEye /></div>
           <h3 className="text-4xl font-black tracking-tighter text-white">{fmt(totals.budget)}</h3>
@@ -166,7 +159,7 @@ function HomeView({ totals, tx, cats, onNew, onLogout }: any) {
       <div className="space-y-4 px-1"><h4 className="font-bold text-base">Recent Spends</h4>
         {tx.slice(0, 5).map((t: any, i: number) => <TxRow key={t.id} t={t} catName={t.cat_name} i={i} />)}
       </div>
-      <button onClick={onNew} className="fixed bottom-28 right-6 w-16 h-16 bg-[#5D5FEF] rounded-2xl shadow-2xl flex items-center justify-center active:scale-95 transition-all"><IconPlus /></button>
+      <button onClick={onNew} className="fixed bottom-28 right-6 w-16 h-16 bg-[#5D5FEF] rounded-2xl shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-all"><IconPlus /></button>
     </div>
   );
 }
@@ -176,7 +169,7 @@ function HistoryView({ tx, onBack }: any) {
   const filtered = tx.filter((t:any) => t.cat_name?.toLowerCase().includes(q.toLowerCase()) || t.sub_name?.toLowerCase().includes(q.toLowerCase()) || t.note?.toLowerCase().includes(q.toLowerCase()));
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
-      <div className="flex justify-between items-center px-1"><h2 className="text-2xl font-bold tracking-tight">Activity History</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full"><IconX /></button></div>
+      <div className="flex justify-between items-center px-1 font-bold text-2xl"><h2>History</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full"><IconX /></button></div>
       <div className="bg-[#1C1C1E] p-4 rounded-2xl border border-white/5 flex items-center gap-3">
         <div className="text-white/20"><IconSearch /></div>
         <input placeholder="Search..." className="bg-transparent outline-none flex-1 font-bold text-sm text-white placeholder:text-white/20" value={q} onChange={e => setQ(e.target.value)} />
@@ -190,9 +183,9 @@ function CategoryDetailView({ cat, tx, onBack, onEdit }: any) {
   const sorted = [...tx].sort((a:any, b:any) => b.date.localeCompare(a.date));
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
-      <div className="flex justify-between items-center py-2"><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconChevron /></button><h2 className="text-xl font-bold">{cat?.name}</h2><button onClick={onEdit} className="text-[#5D5FEF] font-bold text-[10px] uppercase tracking-widest">Settings</button></div>
+      <div className="flex justify-between items-center py-2"><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconChevron /></button><h2 className="text-xl font-bold tracking-tight">{cat?.name}</h2><button onClick={onEdit} className="text-[#5D5FEF] font-bold text-[10px] uppercase tracking-widest">Settings</button></div>
       <div className="bg-[#1C1C1E] p-8 rounded-[2.5rem] border border-white/5 flex justify-between items-end shadow-xl">
-        <div><p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-1">Spent</p><h3 className="text-3xl font-black text-red-400">{fmt(tx.reduce((s:any,t:any)=>s+Number(t.amount),0))}</h3></div>
+        <div><p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-1">Spent</p><h3 className="text-3xl font-black text-red-400 tracking-tight">{fmt(tx.reduce((s:any,t:any)=>s+Number(t.amount),0))}</h3></div>
         <div className="text-right"><p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-1">Limit</p><p className="text-xl font-bold text-white">{fmt(cat?.budget)}</p></div>
       </div>
       <div className="space-y-3">{sorted.map((t: any, i: number) => <TxRow key={t.id} t={t} catName={cat?.name} i={i} />)}</div>
@@ -218,7 +211,7 @@ function CategoryListView({ cats, tx, onBack, onDetail, onAdd }: any) {
             </button>
           );
         })}
-        <button onClick={onAdd} className="w-full py-6 border-dashed border-2 border-white/10 rounded-[2.5rem] text-white/30 font-black tracking-widest text-xs">+ NEW CATEGORY</button>
+        <button onClick={onAdd} className="w-full py-6 border-dashed border-2 border-white/10 rounded-[2.5rem] text-white/30 font-black tracking-widest text-xs uppercase">+ NEW CATEGORY</button>
       </div>
     </div>
   );
@@ -229,7 +222,7 @@ function NewTransactionView({ cats, accs, onClose, onSave }: any) {
   const [f, setF] = useState({ amount: '', note: '', cat_name: 'Select Category', cat_id: '', sub_name: '', acc_id: accs[0]?.id || '', date: new Date().toISOString().split('T')[0] });
   if (pk) return (
     <div className="p-6 h-screen bg-black overflow-y-auto pb-32 no-scrollbar">
-      <div className="flex justify-between items-center mb-10 pt-4 font-black uppercase text-white/30 tracking-[0.3em] mx-auto text-center"><h3 className="text-xs mx-auto">Categorization</h3><button onClick={() => setPk(false)} className="p-2 absolute right-6"><IconX /></button></div>
+      <div className="flex justify-between items-center mb-10 pt-4"><h3 className="text-xs font-black uppercase text-white/30 tracking-[0.3em] mx-auto text-center">Categorization</h3><button onClick={() => setPk(false)} className="p-2 absolute right-6"><IconX /></button></div>
       {cats.map((cat: any) => (
         <div key={cat.id} className="mb-8 px-2">
           <button onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: ''}); setPk(false); }} className="w-full text-left font-bold text-lg p-5 bg-[#121212] border border-white/5 rounded-2xl flex items-center justify-between shadow-sm"><span>{cat.icon} {cat.name}</span><span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-4 py-1.5 rounded-full uppercase">Select</span></button>
@@ -250,7 +243,7 @@ function NewTransactionView({ cats, accs, onClose, onSave }: any) {
         <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 flex justify-between items-center shadow-sm"><div><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Source</p><select value={f.acc_id} onChange={e => setF({...f, acc_id: e.target.value})} className="bg-transparent text-base text-white font-bold outline-none w-full appearance-none">{accs.map((a:any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div><IconChevron /></div>
         <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 shadow-sm"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5">Notes</p><input placeholder="What for?" value={f.note} onChange={e => setF({...f, note: e.target.value})} className="bg-transparent w-full text-white font-medium outline-none" /></div>
       </div>
-      <div className="absolute bottom-10 inset-x-6"><button onClick={() => onSave({ ...f, amount: parseFloat(f.amount)||0 })} className="w-full py-5 bg-[#5D5FEF] rounded-2xl font-black text-xl shadow-xl shadow-indigo-500/20">Confirm Payment</button></div>
+      <div className="absolute bottom-10 inset-x-6"><button onClick={() => onSave({ ...f, amount: parseFloat(f.amount)||0 })} className="w-full py-5 bg-[#5D5FEF] rounded-2xl font-black text-xl shadow-2xl active:scale-95 transition-all">Confirm Payment</button></div>
     </div>
   );
 }
@@ -294,14 +287,14 @@ function EditCategoryView({ cat, onBack, onUpdate, onDelete }: any) {
     <div className="p-6 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
       <div className="flex justify-between items-center font-bold text-xl px-1 tracking-tight"><h2>Adjust Detail</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
       <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1"><p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Label</p><input className="bg-transparent w-full font-bold text-lg outline-none" value={n} onChange={e => setN(e.target.value)} /></div>
-      <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1"><p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Limit</p><input type="number" className="bg-transparent w-full font-bold text-lg text-emerald-400 outline-none" value={b} onChange={e => setB(Number(e.target.value))} /></div>
+      <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1"><p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Budget Limit</p><input type="number" className="bg-transparent w-full font-bold text-lg text-emerald-400 outline-none" value={b} onChange={e => setB(Number(e.target.value))} /></div>
       <div className="space-y-3 px-1"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Subcategories</p>
         <div className="space-y-2">{cat?.subs?.map((si: any, i: any) => (<div key={i} className="bg-[#121212] p-4 rounded-2xl flex justify-between items-center border border-white/5 text-sm font-bold shadow-sm">{si} <button onClick={() => onUpdate(cat.id, { subs: cat.subs.filter((_:any, idx:any) => idx !== i) })}><IconTrash /></button></div>))}</div>
         <div className="flex gap-2 bg-[#1C1C1E] p-2 rounded-2xl border border-white/5"><input className="flex-1 bg-transparent p-3 outline-none font-bold text-sm" placeholder="Add..." value={s} onChange={e => setS(e.target.value)} /><button onClick={handleAdd} className="w-11 h-11 bg-[#5D5FEF] rounded-xl flex items-center justify-center active:scale-90 transition-all"><IconPlus /></button></div>
       </div>
       <div className="flex flex-col gap-3">
         <button onClick={() => { onUpdate(cat.id, { name: n, budget: Number(b) }); onBack(); }} className="w-full py-5 bg-[#5D5FEF] rounded-[2rem] font-black text-xl shadow-xl">Apply changes</button>
-        <button onClick={() => onDelete(cat.id)} className="w-full py-3 text-red-500/40 text-[9px] font-black uppercase tracking-widest bg-red-500/5 rounded-2xl border border-red-500/10">Remove</button>
+        <button onClick={() => onDelete(cat.id)} className="w-full py-3 text-red-500/40 text-[9px] font-black uppercase tracking-widest bg-red-500/5 rounded-2xl border border-red-500/10 flex items-center justify-center gap-2"> <IconTrash /> Remove Category</button>
       </div>
     </div>
   );
@@ -322,8 +315,24 @@ function EditAccountView({ acc, onBack, onSave }: any) {
 function NavBtn({ label, icon, active, onClick }: {label: string, icon: any, active: boolean, onClick: any}) {
   return (
     <button onClick={onClick} className={`flex flex-col items-center gap-1.5 transition-all ${active ? 'text-[#5D5FEF]' : 'text-white/20'}`}>
-      <div className={`${active ? 'scale-110 opacity-100' : 'scale-100 opacity-60'} transition-all mb-0.5`}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={icon}/></svg></div>
+      <div className={`${active ? 'scale-110 opacity-100' : 'scale-100 opacity-60'} mb-0.5`}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={icon}/></svg></div>
       <span className="text-[9px] font-black uppercase tracking-tight leading-none">{label}</span>
     </button>
+  );
+}
+function HistoryView({ tx, onBack }: any) {
+  const [q, setQ] = useState('');
+  const filtered = tx.filter((t:any) => t.cat_name?.toLowerCase().includes(q.toLowerCase()) || t.sub_name?.toLowerCase().includes(q.toLowerCase()) || t.note?.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight"><h2>Activity History</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
+      <div className="bg-[#1C1C1E] p-4 rounded-2xl border border-white/5 flex items-center gap-3">
+        <div className="text-white/20"><IconSearch /></div>
+        <input placeholder="Search..." className="bg-transparent outline-none flex-1 font-bold text-sm text-white placeholder:text-white/20" value={q} onChange={e => setQ(e.target.value)} />
+      </div>
+      <div className="space-y-4 pt-2">
+        {filtered.map((t: any, i: number) => <TxRow key={t.id} t={t} catName={t.cat_name} i={i} />)}
+      </div>
+    </div>
   );
 }
