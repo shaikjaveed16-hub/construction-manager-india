@@ -31,7 +31,7 @@ function TxRow({ t, catName, i }: {t: Transaction, catName: string, i: number}) 
   const color = PETAL_COLORS[i % PETAL_COLORS.length];
   return (
     <div className="bg-[#121212] p-5 rounded-[2rem] border border-white/5 flex justify-between items-center shadow-sm">
-      <div className="flex items-center gap-4 text-left">
+      <div className="flex items-center gap-4 text-left text-white">
         <div className={`w-10 h-10 ${color} rounded-full flex items-center justify-center font-black text-white/90 text-sm`}>
           {catName?.charAt(0).toUpperCase() || '?'}
         </div>
@@ -88,13 +88,13 @@ export default function App() {
     assets: data.acc.reduce((s, a) => s + Number(a.balance), 0)
   }), [data]);
 
-  if (!session) return <LoginView onLogin={async (e:string,p:string) => { await supabase.auth.signInWithPassword({email:e, password:p}); }} />;
+  if (!session) return <LoginView onLogin={async (e: string, p: string) => { await supabase.auth.signInWithPassword({ email: e, password: p }); }} />;
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-indigo-400 font-bold uppercase text-[10px] tracking-[0.3em]">Syncing...</div>;
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex justify-center selection:bg-indigo-500/20">
       <div className="w-full max-w-lg md:max-w-xl bg-black min-h-screen relative border-x border-white/5 pb-32 shadow-2xl">
-        {view === 'home' && <HomeView totals={totals} tx={data.tx} cats={data.cat} onNew={() => setView('new-tx')} onLogout={() => supabase.auth.signOut()} />}
+        {view === 'home' && <HomeView totals={totals} tx={data.tx} onNew={() => setView('new-tx')} onLogout={() => supabase.auth.signOut()} />}
         {view === 'history' && <HistoryView tx={data.tx} onBack={() => setView('home')} />}
         {view === 'categories' && <CategoryListView cats={data.cat} tx={data.tx} onBack={() => setView('home')} onDetail={(id: string)=>{setSelId(id); setView('cat-detail');}} onAdd={async ()=>{const {data:n}=await supabase.from('categories').insert([{name:'New', budget:0, subs:[], user_id:session.user.id}]).select(); if(n) { setSelId(n[0].id); fetchAll(); setView('edit-cat'); }}} />}
         {view === 'cat-detail' && <CategoryDetailView cat={data.cat.find(c=>c.id===selId)} tx={data.tx.filter(t=>t.cat_id===selId)} onBack={()=>setView('categories')} onEdit={()=>setView('edit-cat')} />}
@@ -113,7 +113,7 @@ export default function App() {
   );
 }
 
-// --- VIEWS ---
+// --- SUB-VIEWS ---
 
 function LoginView({ onLogin }: {onLogin: (e: string, p: string) => void}) {
   const [e, setE] = useState(''); const [p, setP] = useState('');
@@ -127,17 +127,17 @@ function LoginView({ onLogin }: {onLogin: (e: string, p: string) => void}) {
       <div className="space-y-4">
         <input placeholder="Email" value={e} onChange={v => setE(v.target.value)} className="w-full bg-[#1C1C1E] p-5 rounded-2xl outline-none text-white font-bold border border-white/5" />
         <input type="password" placeholder="Password" value={p} onChange={v => setP(v.target.value)} className="w-full bg-[#1C1C1E] p-5 rounded-2xl outline-none text-white font-bold border border-white/5" />
-        <button onClick={() => onLogin(e,p)} className="w-full py-5 bg-[#5D5FEF] rounded-2xl font-black text-xl shadow-xl">Login</button>
+        <button onClick={() => onLogin(e,p)} className="w-full py-5 bg-[#5D5FEF] rounded-2xl font-black text-xl">Login</button>
       </div>
     </div>
   );
 }
 
-function HomeView({ totals, tx, cats, onNew, onLogout }: any) {
+function HomeView({ totals, tx, onNew, onLogout }: any) {
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto no-scrollbar pb-40">
       <div className="flex justify-between items-center py-2 text-left">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 text-white">
           <div className="w-11 h-11 rounded-full border border-white/10 bg-gray-900 flex items-center justify-center font-bold text-gray-500">S</div>
           <div><p className="text-[10px] text-white/30 font-bold uppercase tracking-widest leading-none">Assalamualaikum,</p><h2 className="text-lg font-bold text-white mt-1">Shaik</h2></div>
         </div>
@@ -149,14 +149,14 @@ function HomeView({ totals, tx, cats, onNew, onLogout }: any) {
       <div className="relative overflow-hidden rounded-[2.5rem] p-8 bg-[#5D5FEF] shadow-2xl shadow-indigo-500/30" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 15px, rgba(255,255,255,0.04) 15px, rgba(255,255,255,0.04) 16px)' }}>
         <div className="relative z-10 space-y-7 text-left text-white">
           <div className="flex justify-between items-center text-white/80 font-bold text-[11px] uppercase tracking-widest"><span>Overall Budget</span><IconEye /></div>
-          <h3 className="text-4xl font-black tracking-tighter">{fmt(totals.budget)}</h3>
+          <h3 className="text-4xl font-black tracking-tighter text-white">{fmt(totals.budget)}</h3>
           <div className="pt-5 border-t border-white/10 space-y-4">
             <div className="flex justify-between text-xs font-bold uppercase tracking-widest"><span className="text-white/60">Spent</span><span>{fmt(totals.spent)}</span></div>
             <div className="flex justify-between text-xs font-bold uppercase tracking-widest"><span className="text-white/60">Amount Left</span><span className="text-emerald-300 font-black">{fmt(totals.budget - totals.spent)}</span></div>
           </div>
         </div>
       </div>
-      <div className="space-y-4 px-1 text-left"><h4 className="font-bold text-base text-white">Recent Spends</h4>
+      <div className="space-y-4 px-1 text-left text-white"><h4 className="font-bold text-base">Recent Spends</h4>
         {tx.slice(0, 5).map((t: any, i: number) => <TxRow key={t.id} t={t} catName={t.cat_name} i={i} />)}
       </div>
       <button onClick={onNew} className="fixed bottom-28 right-6 w-14 h-14 bg-[#5D5FEF] rounded-2xl shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-all"><IconPlus /></button>
@@ -168,13 +168,13 @@ function HistoryView({ tx, onBack }: any) {
   const [q, setQ] = useState('');
   const filtered = tx.filter((t:any) => t.cat_name?.toLowerCase().includes(q.toLowerCase()) || t.sub_name?.toLowerCase().includes(q.toLowerCase()) || t.note?.toLowerCase().includes(q.toLowerCase()));
   return (
-    <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
-      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left text-white"><h2>History</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full"><IconX /></button></div>
+    <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar text-white">
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2>History</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconX /></button></div>
       <div className="bg-[#1C1C1E] p-4 rounded-2xl border border-white/5 flex items-center gap-3">
         <div className="text-white/20"><IconSearch /></div>
-        <input placeholder="Search..." className="bg-transparent outline-none flex-1 font-bold text-sm text-white placeholder:text-white/20" value={q} onChange={e => setQ(e.target.value)} />
+        <input placeholder="Search transactions..." className="bg-transparent outline-none flex-1 font-bold text-sm text-white placeholder:text-white/20" value={q} onChange={e => setQ(e.target.value)} />
       </div>
-      <div className="space-y-4 pt-2 text-left">
+      <div className="space-y-4 pt-2">
         {filtered.map((t: any, i: number) => <TxRow key={t.id} t={t} catName={t.cat_name} i={i} />)}
       </div>
     </div>
@@ -185,7 +185,7 @@ function CategoryDetailView({ cat, tx, onBack, onEdit }: any) {
   const sorted = [...tx].sort((a:any, b:any) => b.date.localeCompare(a.date));
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar text-white">
-      <div className="flex justify-between items-center py-2 text-left"><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconChevron /></button><h2 className="text-xl font-bold tracking-tight">{cat?.name}</h2><button onClick={onEdit} className="text-[#5D5FEF] font-bold text-[10px] uppercase tracking-widest">Settings</button></div>
+      <div className="flex justify-between items-center py-2 text-left"><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconChevron /></button><h2 className="text-xl font-bold tracking-tight">{cat?.name}</h2><button onClick={onEdit} className="text-[#5D5FEF] font-bold text-[10px] uppercase tracking-widest">Settings</button></div>
       <div className="bg-[#1C1C1E] p-8 rounded-[2.5rem] border border-white/5 flex justify-between items-end shadow-xl">
         <div className="text-left"><p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-1">Spent</p><h3 className="text-3xl font-black text-red-400 tracking-tight">{fmt(tx.reduce((s:any,t:any)=>s+Number(t.amount),0))}</h3></div>
         <div className="text-right"><p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-1">Limit</p><p className="text-xl font-bold text-white">{fmt(cat?.budget)}</p></div>
@@ -197,8 +197,8 @@ function CategoryDetailView({ cat, tx, onBack, onEdit }: any) {
 
 function CategoryListView({ cats, tx, onBack, onDetail, onAdd }: any) {
   return (
-    <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar text-white">
-      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2>Categories</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
+    <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar text-white text-left">
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight"><h2>Categories</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconX /></button></div>
       <div className="space-y-4">
         {cats.map((c: any) => {
           const s = tx.filter((t:any) => t.cat_id === c.id).reduce((sum:any,t:any) => sum + Number(t.amount), 0);
@@ -229,7 +229,7 @@ function NewTransactionView({ cats, accs, onClose, onSave }: any) {
         <div key={cat.id} className="mb-8 px-2 text-left">
           <button onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: ''}); setPk(false); }} className="w-full text-left font-bold text-lg p-5 bg-[#121212] border border-white/5 rounded-2xl flex items-center justify-between shadow-sm text-white"><span>{cat.icon} {cat.name}</span><span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-4 py-1.5 rounded-full uppercase">Select</span></button>
           <div className="ml-12 mt-5 space-y-6">
-            {cat.subs?.map((s: any, i: any) => (<button key={i} onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: s}); setPk(false); }} className="w-full text-left text-white/40 font-bold text-base flex items-center gap-3"> <div className="w-1.5 h-1.5 bg-white/10 rounded-full"></div> {s}</button>))}
+            {cat.subs?.map((s: any, i: any) => (<button key={i} onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: s}); setPk(false); }} className="w-full text-left text-white/40 font-bold text-base flex items-center gap-3 leading-none"> <div className="w-1.5 h-1.5 bg-white/10 rounded-full"></div> {s}</button>))}
           </div>
         </div>
       ))}
@@ -237,15 +237,15 @@ function NewTransactionView({ cats, accs, onClose, onSave }: any) {
   );
   return (
     <div className="flex flex-col h-screen bg-black p-6 relative text-white">
-      <div className="flex justify-between items-center mb-6 px-1 text-left"><h3 className="text-2xl font-bold">New Payment</h3><button onClick={onClose} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
+      <div className="flex justify-between items-center mb-6 px-1 text-left"><h3 className="text-2xl font-bold">New Payment</h3><button onClick={onClose} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconX /></button></div>
       <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pb-32 text-left">
-        <div className="bg-[#1C1C1E] p-8 rounded-[2.5rem] border border-white/5 shadow-inner"><p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">Value</p><div className="text-4xl font-black flex gap-3 text-white tracking-tighter"><span>₹</span><input type="number" placeholder="0" value={f.amount} onChange={e => setF({...f, amount: e.target.value})} className="bg-transparent w-full outline-none text-white" /></div></div>
-        <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 shadow-sm"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5">When?</p><input type="date" value={f.date} onChange={e => setF({...f, date: e.target.value})} className="bg-transparent w-full text-white font-bold outline-none [color-scheme:dark]" /></div>
-        <div onClick={() => setPk(true)} className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 flex justify-between items-center shadow-sm"><div><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Target</p><p className="text-base font-bold text-white">{f.cat_name}{f.sub_name && ` • ${f.sub_name}`}</p></div><IconChevron /></div>
-        <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 flex justify-between items-center shadow-sm"><div><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Source</p><select value={f.acc_id} onChange={e => setF({...f, acc_id: e.target.value})} className="bg-transparent text-base text-white font-bold outline-none w-full appearance-none">{accs.map((a:any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div><IconChevron /></div>
-        <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 shadow-sm"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5">Notes</p><input placeholder="What for?" value={f.note} onChange={e => setF({...f, note: e.target.value})} className="bg-transparent w-full text-white font-medium outline-none" /></div>
+        <div className="bg-[#1C1C1E] p-8 rounded-[2.5rem] border border-white/5 shadow-inner"><p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2 text-left">Value</p><div className="text-4xl font-black flex gap-3 text-white tracking-tighter"><span>₹</span><input type="number" placeholder="0" value={f.amount} onChange={e => setF({...f, amount: e.target.value})} className="bg-transparent w-full outline-none text-white" /></div></div>
+        <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 shadow-sm"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 text-left">When?</p><input type="date" value={f.date} onChange={e => setF({...f, date: e.target.value})} className="bg-transparent w-full text-white font-bold outline-none [color-scheme:dark]" /></div>
+        <div onClick={() => setPk(true)} className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 flex justify-between items-center shadow-sm"><div><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 text-left">Target</p><p className="text-base font-bold text-white">{f.cat_name}{f.sub_name && ` • ${f.sub_name}`}</p></div><IconChevron /></div>
+        <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 flex justify-between items-center shadow-sm"><div><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 text-left">Source</p><select value={f.acc_id} onChange={e => setF({...f, acc_id: e.target.value})} className="bg-transparent text-base text-white font-bold outline-none w-full appearance-none">{accs.map((a:any) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div><IconChevron /></div>
+        <div className="bg-[#1C1C1E] p-5 rounded-2xl border border-white/5 shadow-sm"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5 text-left">Notes</p><input placeholder="What for?" value={f.note} onChange={e => setF({...f, note: e.target.value})} className="bg-transparent w-full text-white font-medium outline-none" /></div>
       </div>
-      <div className="absolute bottom-10 inset-x-6"><button onClick={() => onSave({ ...f, amount: parseFloat(f.amount)||0 })} className="w-full py-5 bg-[#5D5FEF] rounded-2xl font-black text-xl shadow-2xl active:scale-95 transition-all">Confirm Payment</button></div>
+      <div className="absolute bottom-10 inset-x-6"><button onClick={() => onSave({ ...f, amount: parseFloat(f.amount)||0 })} className="w-full py-5 bg-[#5D5FEF] rounded-2xl font-black text-xl shadow-2xl active:scale-95 transition-all text-white">Confirm Payment</button></div>
     </div>
   );
 }
@@ -253,8 +253,8 @@ function NewTransactionView({ cats, accs, onClose, onSave }: any) {
 function AccountsView({ accs, onBack, onEdit, onAdd }: any) {
   const total = accs.reduce((s:number, a:any) => s + Number(a.balance), 0);
   return (
-    <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar text-white">
-      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2>My Wallets</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
+    <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar text-white text-left">
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2>My Wallets</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconX /></button></div>
       <div className="bg-[#1C1C1E] p-8 rounded-[2.5rem] border border-white/5 text-center shadow-xl">
         <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">Total Net Balance</p>
         <h3 className="text-4xl font-black text-white tracking-tighter text-center">{fmt(total)}</h3>
@@ -293,15 +293,15 @@ function EditCategoryView({ cat, onBack, onUpdate, onDelete }: any) {
   };
   return (
     <div className="p-6 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar text-left text-white">
-      <div className="flex justify-between items-center font-bold text-xl px-1 tracking-tight"><h2>Adjust Detail</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
-      <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1 text-left"><p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Label</p><input className="bg-transparent w-full font-bold text-lg outline-none text-white" value={n} onChange={e => setN(e.target.value)} /></div>
-      <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1 text-left"><p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Limit</p><input type="number" className="bg-transparent w-full font-bold text-lg text-emerald-400 outline-none" value={b} onChange={e => setB(Number(e.target.value))} /></div>
+      <div className="flex justify-between items-center font-bold text-xl px-1 tracking-tight"><h2>Adjust Detail</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconX /></button></div>
+      <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1 text-left"><p className="text-[9px] font-bold text-white/30 uppercase tracking-widest leading-none mb-1">Label</p><input className="bg-transparent w-full font-bold text-lg outline-none text-white" value={n} onChange={e => setN(e.target.value)} /></div>
+      <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-white/5 space-y-1 text-left"><p className="text-[9px] font-bold text-white/30 uppercase tracking-widest leading-none mb-1">Limit</p><input type="number" className="bg-transparent w-full font-bold text-lg text-emerald-400 outline-none" value={b} onChange={e => setB(Number(e.target.value))} /></div>
       <div className="space-y-3 px-1 text-left"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Subcategories</p>
-        <div className="space-y-2 text-left">{cat?.subs?.map((si: any, i: any) => (<div key={i} className="bg-[#121212] p-4 rounded-2xl flex justify-between items-center border border-white/5 text-sm font-bold shadow-sm">{si} <button onClick={() => onUpdate(cat.id, { subs: cat.subs.filter((_:any, idx:any) => idx !== i) })} className="p-1"><IconTrash /></button></div>))}</div>
+        <div className="space-y-2 text-left text-white">{cat?.subs?.map((si: any, i: any) => (<div key={i} className="bg-[#121212] p-4 rounded-2xl flex justify-between items-center border border-white/5 text-sm font-bold shadow-sm">{si} <button onClick={() => onUpdate(cat.id, { subs: cat.subs.filter((_:any, idx:any) => idx !== i) })} className="p-1"><IconTrash /></button></div>))}</div>
         <div className="flex gap-2 bg-[#1C1C1E] p-2 rounded-2xl border border-white/5"><input className="flex-1 bg-transparent p-3 outline-none font-bold text-sm text-white" placeholder="Add..." value={s} onChange={e => setS(e.target.value)} /><button onClick={handleAdd} className="w-11 h-11 bg-[#5D5FEF] rounded-xl flex items-center justify-center active:scale-90 transition-all text-white"><IconPlus /></button></div>
       </div>
       <div className="flex flex-col gap-3">
-        <button onClick={() => { onUpdate(cat.id, { name: n, budget: Number(b) }); onBack(); }} className="w-full py-5 bg-[#5D5FEF] rounded-[2rem] font-black text-xl shadow-xl">Apply changes</button>
+        <button onClick={() => { onUpdate(cat.id, { name: n, budget: Number(b) }); onBack(); }} className="w-full py-5 bg-[#5D5FEF] rounded-[2rem] font-black text-xl shadow-xl text-white">Apply changes</button>
         <button onClick={() => onDelete(cat.id)} className="w-full py-3 text-red-500/40 text-[9px] font-black uppercase tracking-widest bg-red-500/5 rounded-2xl border border-red-500/10 flex items-center justify-center gap-2 text-red-500"> <IconTrash /> Remove Category</button>
       </div>
     </div>
@@ -312,10 +312,10 @@ function EditAccountView({ acc, onBack, onSave }: any) {
   const [n, setN] = useState(acc?.name || ''); const [b, setB] = useState(acc?.balance || 0);
   return (
     <div className="p-6 space-y-6 text-left text-white">
-      <div className="flex justify-between items-center font-bold px-1 tracking-tight text-left"><h2>Source Adjust</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-gray-500"><IconX /></button></div>
+      <div className="flex justify-between items-center font-bold px-1 tracking-tight text-left"><h2>Source Adjust</h2><button onClick={onBack} className="p-2 bg-[#1C1C1E] rounded-full text-white/50"><IconX /></button></div>
       <div className="bg-[#1C1C1E] p-7 rounded-[2.5rem] border border-white/5 space-y-2 text-left"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Name</p><input className="bg-transparent w-full font-bold text-xl outline-none text-white" value={n} onChange={e => setN(e.target.value)} /></div>
       <div className="bg-[#1C1C1E] p-7 rounded-[2.5rem] border border-white/5 space-y-2 text-left"><p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Balance</p><input type="number" className="bg-transparent w-full font-bold text-xl outline-none text-emerald-400" value={b} onChange={e => setB(Number(e.target.value))} /></div>
-      <button onClick={() => onSave(acc.id, n, b)} className="w-full py-5 bg-[#5D5FEF] rounded-[2.5rem] font-black text-xl shadow-xl active:scale-95 transition-all">Confirm Update</button>
+      <button onClick={() => onSave(acc.id, n, b)} className="w-full py-5 bg-[#5D5FEF] rounded-[2.5rem] font-black text-xl shadow-xl active:scale-95 transition-all text-white">Confirm Update</button>
     </div>
   );
 }
