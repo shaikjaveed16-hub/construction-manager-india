@@ -1,19 +1,17 @@
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// --- TYPES ---
+// --- TYPES (TypeScript compliance for Vercel) ---
 interface Account { id: string; name: string; balance: number; type: string; }
 interface Category { id: string; name: string; icon: string; budget: number; subs: string[]; }
 interface Transaction { id: string; amount: number; note: string; cat_id: string; cat_name: string; sub_name: string; acc_id: string; date: string; created_at?: string; }
 
 // --- CLOUD CONFIG ---
-const SUPABASE_URL = 'https://ckydqqbsnoafylzurkoi.supabase.co';
-// !!! CRITICAL: PASTE YOUR ACTUAL KEY HERE !!!
-const SUPABASE_KEY = 'sb_publishable_Q0chi7DtM53u-Ah4Ddm9nA_ilok1k98'; 
-
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ckydqqbsnoafylzurkoi.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_Q0chi7DtM53u-Ah4Ddm9nA_ilok1k98'; 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- HELPERS ---
+// --- STYLING CONSTANTS ---
 const fmt = (v: number) => '₹' + Math.round(v || 0).toLocaleString('en-IN');
 const PETAL_COLORS = ['bg-indigo-500', 'bg-pink-500', 'bg-amber-500', 'bg-emerald-500', 'bg-sky-500'];
 const CHART_COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9'];
@@ -22,19 +20,19 @@ const CHART_COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9'];
 const IconPlus = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
 const IconChevron = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"></path></svg>;
 const IconX = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-const IconBell = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
-const IconLogout = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>;
-const IconSun = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
+const IconBell = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
+const IconLogout = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>;
+const IconSun = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line></svg>;
 const IconMoon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>;
-const IconSearch = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
-const IconEye = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
+const IconSearch = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
+const IconEye = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 const IconTrash = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EB5757" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
 
-// --- SHARED ROW COMPONENT ---
+// --- SHARED COMPONENTS ---
 function TxRow({ t, catName, i, onClick, isDark }: {t: Transaction, catName: string, i: number, onClick: (t: Transaction) => void, isDark: boolean}) {
   const color = PETAL_COLORS[i % PETAL_COLORS.length];
   return (
-    <button onClick={() => onClick(t)} className={`w-full ${isDark ? 'bg-[#121212] border-white/5 shadow-black' : 'bg-white border-gray-100 shadow-sm'} p-4 rounded-[1.8rem] border flex justify-between items-center active:scale-[0.98] transition-all`}>
+    <button onClick={() => onClick(t)} className={`w-full ${isDark ? 'bg-[#121212] border-white/5' : 'bg-white border-gray-100 shadow-sm'} p-4 rounded-[1.8rem] border flex justify-between items-center active:scale-[0.98] transition-all`}>
       <div className="flex items-center gap-4 text-left">
         <div className={`w-10 h-10 ${color} rounded-full flex items-center justify-center font-black text-white text-sm shadow-md`}>
           {catName?.charAt(0).toUpperCase() || '?'}
@@ -77,7 +75,7 @@ export default function App() {
       supabase.from('categories').select('*').order('name'),
       supabase.from('transactions').select('*').order('date', { ascending: false }).order('created_at', { ascending: false })
     ]);
-    setData({ acc: a.data || [], cat: c.data || [], tx: t.data || [] });
+    setData({ acc: (a.data as Account[]) || [], cat: (c.data as Category[]) || [], tx: (t.data as Transaction[]) || [] });
     setLoading(false);
   };
 
@@ -104,69 +102,64 @@ export default function App() {
     assets: data.acc.reduce((s, a) => s + Number(a.balance), 0)
   }), [data]);
 
-  if (SUPABASE_KEY.includes('PASTE_YOUR')) return <div className="min-h-screen bg-black flex items-center justify-center p-10 text-red-400 font-bold text-center">ANON KEY MISSING IN App.tsx</div>;
-
-  if (!session) return <LoginView isDark={isDark} onLogin={async (e:string,p:string) => { 
-    const res = await supabase.auth.signInWithPassword({ email: e, password: p });
+  if (!session) return <LoginView isDark={isDark} onLogin={async (email: string, pass: string) => { 
+    const res = await supabase.auth.signInWithPassword({ email, password: pass });
     if(res.error) alert(res.error.message);
   }} />;
 
-  if (loading) return <div className={`${isDark ? 'bg-black text-indigo-400' : 'bg-gray-50 text-indigo-600'} min-h-screen flex items-center justify-center font-bold uppercase text-[10px] tracking-[0.4em]`}>Syncing Build...</div>;
+  if (loading) return <div className={`${isDark ? 'bg-black text-indigo-400' : 'bg-gray-50 text-indigo-600'} min-h-screen flex items-center justify-center font-bold uppercase text-xs tracking-[0.4em]`}>Syncing...</div>;
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-[#F3F4F6]'} font-sans flex justify-center transition-colors duration-300`}>
       <div className={`w-full max-w-lg md:max-w-xl ${isDark ? 'bg-black border-white/5' : 'bg-[#F9FAFB] border-gray-200'} min-h-screen relative border-x pb-32 shadow-2xl`}>
-        
         <Suspense fallback={null}>
-          {view === 'home' && <HomeView totals={totals} tx={data.tx} isDark={isDark} onNew={() => { setEditingTx(null); setView('new-tx'); }} onLogout={() => supabase.auth.signOut()} onToggleTheme={() => setIsDark(!isDark)} onEditTx={(t: any) => {setEditingTx(t); setView('new-tx');}} />}
-          {view === 'history' && <HistoryView tx={data.tx} isDark={isDark} onBack={() => setView('home')} onEditTx={(t: any) => {setEditingTx(t); setView('new-tx');}} />}
-          {view === 'categories' && <CategoryListView cats={data.cat} tx={data.tx} isDark={isDark} onBack={() => setView('home')} onDetail={(id: string)=>{setSelId(id); setView('cat-detail');}} onAdd={async ()=>{const {data:n}=await supabase.from('categories').insert([{name:'New Item', budget:0, subs:[], user_id:session.user.id}]).select(); if(n) { setSelId(n[0].id); fetchAll(); setView('edit-cat'); }}} />}
-          {view === 'cat-detail' && <CategoryDetailView cat={data.cat.find(c=>c.id===selId)} tx={data.tx.filter(t=>t.cat_id===selId)} isDark={isDark} onBack={()=>setView('categories')} onEdit={()=>setView('edit-cat')} onEditTx={(t: any) => {setEditingTx(t); setView('new-tx');}} />}
+          {view === 'home' && <HomeView totals={totals} tx={data.tx} isDark={isDark} onNew={() => { setEditingTx(null); setView('new-tx'); }} onLogout={() => supabase.auth.signOut()} onToggleTheme={() => setIsDark(!isDark)} onEditTx={(t: Transaction) => {setEditingTx(t); setView('new-tx');}} />}
+          {view === 'history' && <HistoryView tx={data.tx} isDark={isDark} onBack={() => setView('home')} onEditTx={(t: Transaction) => {setEditingTx(t); setView('new-tx');}} />}
+          {view === 'categories' && <CategoryListView cats={data.cat} tx={data.tx} isDark={isDark} onBack={() => setView('home')} onDetail={(id: string)=>{setSelId(id); setView('cat-detail');}} onAdd={async ()=>{const {data:n}=await supabase.from('categories').insert([{name:'New', budget:0, subs:[], user_id:session.user.id}]).select(); if(n) { setSelId(n[0].id); fetchAll(); setView('edit-cat'); }}} />}
+          {view === 'cat-detail' && <CategoryDetailView cat={data.cat.find(c=>c.id===selId)} tx={data.tx.filter(t=>t.cat_id===selId)} isDark={isDark} onBack={()=>setView('categories')} onEdit={()=>setView('edit-cat')} onEditTx={(t: Transaction) => {setEditingTx(t); setView('new-tx');}} />}
           {view === 'accounts' && <AccountsView accs={data.acc} isDark={isDark} onBack={()=>setView('home')} onEdit={(id: string)=>{setSelId(id); setView('edit-acc');}} onAdd={async ()=>{await supabase.from('accounts').insert([{name:'New Wallet', balance:0, type:'Bank', user_id:session.user.id}]); fetchAll();}} />}
-          
           {view === 'edit-cat' && <EditCategoryView cat={data.cat.find(c=>c.id===selId)} isDark={isDark} onBack={()=>setView('cat-detail')} onUpdate={async (id: string,p: any)=>{await supabase.from('categories').update(p).eq('id',id); fetchAll();}} onDelete={async (id: string)=>{if(confirm("Delete?")){await supabase.from('categories').delete().eq('id',id); fetchAll(); setView('categories');}}} />}
           {view === 'edit-acc' && <EditAccountView acc={data.acc.find(a=>a.id===selId)} isDark={isDark} onBack={()=>setView('accounts')} onSave={async (id: string,n: string,b: number)=>{await supabase.from('accounts').update({name:n, balance:b}).eq('id',id); fetchAll(); setView('accounts');}} />}
-          {view === 'new-tx' && <NewTransactionView cats={data.cat} accs={data.acc} isDark={isDark} editingTx={editingTx} onClose={()=>setView('home')} onSave={handleSaveTx} onDelete={async (t: any)=>{if(confirm("Delete Spend?")){await supabase.from('transactions').delete().eq(t.id); const a = data.acc.find(x=>x.id===t.acc_id); if(a) await supabase.from('accounts').update({balance: a.balance+t.amount}).eq('id',t.acc_id); fetchAll(); setView('home');}}} />}
+          {view === 'new-tx' && <NewTransactionView cats={data.cat} accs={data.acc} isDark={isDark} editingTx={editingTx} onClose={()=>setView('home')} onSave={handleSaveTx} onDelete={async (t: Transaction)=>{if(confirm("Delete Spend?")){await supabase.from('transactions').delete().eq(t.id); const a = data.acc.find(x=>x.id===t.acc_id); if(a) await supabase.from('accounts').update({balance: a.balance+t.amount}).eq('id',t.acc_id); fetchAll(); setView('home');}}} />}
         </Suspense>
-
-        <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg md:max-w-xl ${isDark ? 'bg-black/95 border-white/10' : 'bg-white/95 border-gray-200'} border-t py-4 flex justify-around items-center z-50 backdrop-blur-xl`}>
-          <NavBtn label="Home" icon="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" active={view==='home'} isDark={isDark} onClick={() => setView('home')} />
-          <NavBtn label="History" icon="M12 8v4l3 3 M12 2a10 10 0 1 0 10 10" active={view==='history'} isDark={isDark} onClick={() => setView('history')} />
-          <NavBtn label="Categories" icon="M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z" active={view.includes('cat')} isDark={isDark} onClick={() => setView('categories')} />
-          <NavBtn label="Accounts" icon="M2 4h20v16H2z M2 9.5h20" active={view.includes('acc')} isDark={isDark} onClick={() => setView('accounts')} />
+        <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg md:max-w-xl ${isDark ? 'bg-black/95 border-white/10' : 'bg-white/95 border-gray-200 shadow-xl'} border-t py-4 flex justify-around items-center z-50 backdrop-blur-xl`}>
+          <NavBtn label="Home" icon="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" active={view==='home'} onClick={() => setView('home')} />
+          <NavBtn label="History" icon="M12 8v4l3 3 M12 2a10 10 0 1 0 10 10" active={view==='history'} onClick={() => setView('history')} />
+          <NavBtn label="Categories" icon="M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z" active={view.includes('cat')} onClick={() => setView('categories')} />
+          <NavBtn label="Accounts" icon="M2 4h20v16H2z M2 9.5h20" active={view.includes('acc')} onClick={() => setView('accounts')} />
         </nav>
       </div>
     </div>
   );
 }
 
-// --- SUB-VIEWS ---
+// --- SUB-COMPONENTS ---
 
 function LoginView({ onLogin, isDark }: any) {
   const [e, setE] = useState(''); const [p, setP] = useState('');
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-gray-50'} flex flex-col justify-center p-8 space-y-10`}>
+    <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-gray-50'} flex flex-col justify-center p-10 space-y-10`}>
       <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-indigo-600/20">S</div>
+        <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl">S</div>
         <h1 className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome back</h1>
         <p className={`${isDark ? 'text-white/30' : 'text-gray-400'} font-bold text-xs uppercase tracking-[0.25em]`}>Sign in to sync your build</p>
       </div>
       <div className="space-y-4">
-        <input placeholder="Email" value={e} onChange={v => setE(v.target.value)} className={`w-full ${isDark ? 'bg-[#1C1C1E] text-white border-white/5' : 'bg-white text-gray-900 border-gray-200'} p-5 rounded-2xl outline-none font-bold border`} />
-        <input type="password" placeholder="Password" value={p} onChange={v => setP(v.target.value)} className={`w-full ${isDark ? 'bg-[#1C1C1E] text-white border-white/5' : 'bg-white text-gray-900 border-gray-200'} p-5 rounded-2xl outline-none font-bold border`} />
-        <button onClick={() => onLogin(e,p)} className="w-full py-5 bg-[#5D5FEF] text-white rounded-2xl font-black text-xl shadow-xl active:scale-95 transition-transform">Login</button>
+        <input placeholder="Email" value={e} onChange={v => setE(v.target.value)} className={`w-full ${isDark ? 'bg-[#1C1C1E] text-white border-white/5' : 'bg-white text-gray-900 border-gray-200'} p-5 rounded-2xl outline-none font-bold border shadow-sm`} />
+        <input type="password" placeholder="Password" value={p} onChange={v => setP(v.target.value)} className={`w-full ${isDark ? 'bg-[#1C1C1E] text-white border-white/5' : 'bg-white text-gray-900 border-gray-200'} p-5 rounded-2xl outline-none font-bold border shadow-sm`} />
+        <button onClick={() => onLogin(e,p)} className="w-full py-5 bg-[#5D5FEF] text-white rounded-2xl font-black text-xl shadow-xl">Login</button>
       </div>
     </div>
   );
 }
 
-function HomeView({ totals, tx, isDark, onNew, onLogout, onToggleTheme, onEditTx }: any) {
+function HomeView({ totals, tx, onNew, onLogout, onToggleTheme, isDark, onEditTx }: any) {
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto no-scrollbar pb-40">
-      <div className="flex justify-between items-center py-2">
+      <div className="flex justify-between items-center py-2 text-left">
         <div className="flex items-center gap-3">
-          <div className={`w-11 h-11 rounded-full border ${isDark ? 'border-white/10 bg-gray-900' : 'border-gray-200 bg-gray-100 shadow-inner'} flex items-center justify-center font-bold text-gray-400`}>S</div>
-          <div className="text-left"><p className={`text-xs font-bold uppercase tracking-widest leading-none ${isDark ? 'text-white/30' : 'text-gray-400'}`}>Assalamualaikum,</p><h2 className={`text-lg font-bold mt-1.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>Shaik</h2></div>
+          <div className={`w-11 h-11 rounded-full border ${isDark ? 'border-white/10 bg-gray-900' : 'border-gray-200 bg-gray-100'} flex items-center justify-center font-bold text-gray-400`}>S</div>
+          <div><p className={`text-xs font-bold uppercase tracking-widest leading-none ${isDark ? 'text-white/30' : 'text-gray-400'}`}>Assalamualaikum,</p><h2 className={`text-lg font-bold mt-1.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>Shaik</h2></div>
         </div>
         <div className="flex gap-2">
           <button onClick={onToggleTheme} className={`p-2 rounded-full border ${isDark ? 'text-white/30 border-white/5' : 'text-gray-400 border-gray-100 bg-white shadow-sm'}`}>{isDark ? <IconSun /> : <IconMoon />}</button>
@@ -174,22 +167,20 @@ function HomeView({ totals, tx, isDark, onNew, onLogout, onToggleTheme, onEditTx
           <button onClick={onLogout} className={`p-2 rounded-full border ${isDark ? 'text-white/30 border-white/5' : 'text-gray-400 border-gray-100 bg-white shadow-sm'}`}><IconLogout /></button>
         </div>
       </div>
-      
-      <div className="relative overflow-hidden rounded-[2.5rem] p-7 bg-[#5D5FEF] shadow-2xl shadow-indigo-600/30" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 15px, rgba(255,255,255,0.04) 15px, rgba(255,255,255,0.04) 16px)' }}>
-        <div className="relative z-10 space-y-6 text-left text-white">
+      <div className="relative overflow-hidden rounded-[2.5rem] p-8 bg-[#5D5FEF] shadow-2xl shadow-indigo-600/30" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 15px, rgba(255,255,255,0.04) 15px, rgba(255,255,255,0.04) 16px)' }}>
+        <div className="relative z-10 space-y-7 text-left text-white">
           <div className="flex justify-between items-center text-white/80 font-bold text-xs uppercase tracking-widest"><span>Overall Budget</span><IconEye /></div>
-          <h3 className="text-4xl font-black tracking-tighter">{fmt(totals.budget)}</h3>
+          <h3 className="text-4xl font-black tracking-tighter text-white">{fmt(totals.budget)}</h3>
           <div className="pt-5 border-t border-white/10 space-y-4">
             <div className="flex justify-between text-xs font-bold uppercase tracking-widest"><span className="text-white/60">Spent</span><span>{fmt(totals.spent)}</span></div>
             <div className="flex justify-between text-xs font-bold uppercase tracking-widest"><span className="text-white/60">Amount Left</span><span className="text-emerald-300 font-black">{fmt(totals.budget - totals.spent)}</span></div>
           </div>
         </div>
       </div>
-
-      <div className="space-y-4 px-1 text-left"><h4 className={`font-bold text-base ${isDark ? 'text-white' : 'text-gray-900'}`}>Recent Spends</h4>
+      <div className="space-y-4 px-1 text-left text-white"><h4 className={`font-bold text-base ${isDark ? 'text-white' : 'text-gray-900'}`}>Recent Spends</h4>
         {tx.slice(0, 5).map((t: any, i: number) => <TxRow key={t.id} t={t} catName={t.cat_name} i={i} onClick={onEditTx} isDark={isDark} />)}
       </div>
-      <button onClick={onNew} className="fixed bottom-28 right-6 w-16 h-16 bg-[#5D5FEF] text-white rounded-2xl shadow-2xl flex items-center justify-center z-40 active:scale-90 transition-transform shadow-indigo-500/30"><IconPlus /></button>
+      <button onClick={onNew} className="fixed bottom-28 right-6 w-16 h-16 bg-[#5D5FEF] text-white rounded-2xl shadow-2xl flex items-center justify-center z-40 active:scale-90"><IconPlus /></button>
     </div>
   );
 }
@@ -199,8 +190,8 @@ function HistoryView({ tx, isDark, onBack, onEditTx }: any) {
   const filtered = tx.filter((t:any) => t.cat_name?.toLowerCase().includes(q.toLowerCase()) || t.sub_name?.toLowerCase().includes(q.toLowerCase()) || t.note?.toLowerCase().includes(q.toLowerCase()));
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
-      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>History</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
-      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-4 rounded-2xl border flex items-center gap-3`}>
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left text-white"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>History</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
+      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5 shadow-black' : 'bg-white border-gray-200 shadow-sm'} p-4 rounded-2xl border flex items-center gap-3`}>
         <div className="text-gray-400"><IconSearch /></div>
         <input placeholder="Search transactions..." className={`bg-transparent outline-none flex-1 font-bold text-sm ${isDark ? 'text-white placeholder:text-white/20' : 'text-gray-900 placeholder:text-gray-300'}`} value={q} onChange={e => setQ(e.target.value)} />
       </div>
@@ -212,28 +203,28 @@ function HistoryView({ tx, isDark, onBack, onEditTx }: any) {
 function CategoryDetailView({ cat, tx, isDark, onBack, onEdit, onEditTx }: any) {
   const sorted = [...tx].sort((a:any, b:any) => b.date.localeCompare(a.date));
   return (
-    <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar">
-      <div className="flex justify-between items-center py-2 text-left"><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconChevron /></button><h2 className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{cat?.name} History</h2><button onClick={onEdit} className="text-indigo-500 font-bold text-xs uppercase tracking-widest">Settings</button></div>
-      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-lg'} p-7 rounded-[2.5rem] border flex justify-between items-end`}>
+    <div className="p-5 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar text-white">
+      <div className="flex justify-between items-center py-2 text-left text-white"><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconChevron /></button><h2 className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{cat?.name} History</h2><button onClick={onEdit} className="text-indigo-500 font-bold text-xs uppercase tracking-widest">Settings</button></div>
+      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-lg'} p-8 rounded-[2.5rem] border flex justify-between items-end`}>
         <div className="text-left"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Spent</p><h3 className="text-3xl font-black text-red-500 tracking-tight">{fmt(tx.reduce((s:any,t:any)=>s+Number(t.amount),0))}</h3></div>
         <div className="text-right"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Limit</p><p className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{fmt(cat?.budget)}</p></div>
       </div>
-      <div className="space-y-3">{sorted.map((t: any, i: number) => <TxRow key={t.id} t={t} catName={cat?.name} i={i} isDark={isDark} onClick={onEditTx} />)}</div>
+      <div className="space-y-3 text-left">{sorted.map((t: any, i: number) => <TxRow key={t.id} t={t} catName={cat?.name} i={i} isDark={isDark} onClick={onEditTx} />)}</div>
     </div>
   );
 }
 
 function CategoryListView({ cats, tx, isDark, onBack, onDetail, onAdd }: any) {
   return (
-    <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar">
-      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>Categories</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
-      <div className="space-y-4">
+    <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar text-white text-left">
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left text-white"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>Categories</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
+      <div className="space-y-4 text-left">
         {cats.map((c: any) => {
           const s = tx.filter((t:any) => t.cat_id === c.id).reduce((sum:any,t:any) => sum + Number(t.amount), 0);
           return (
             <button key={c.id} onClick={() => onDetail(c.id)} className={`w-full ${isDark ? 'bg-[#121212] border-white/5 shadow-black' : 'bg-white border-gray-100 shadow-md'} p-5 rounded-[2.2rem] border space-y-4 text-left active:scale-[0.98] transition-all`}>
               <div className="flex justify-between items-center"><div className="flex items-center gap-4 text-left"><span className="text-2xl">{c.icon}</span><p className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>{c.name}</p></div><div className="flex items-center gap-2"><span className="w-6 h-6 bg-indigo-500/10 rounded-full flex items-center justify-center text-[10px] font-black text-indigo-500">{c.subs?.length || 0}</span><IconChevron /></div></div>
-              <div className="flex justify-between text-xs font-black uppercase tracking-[0.2em] pt-4 border-t border-gray-100/10">
+              <div className="flex justify-between text-xs font-black uppercase tracking-[0.2em] pt-5 border-t border-gray-200/10">
                 <div className="space-y-1"><p className="text-gray-400">Budget</p><p className={isDark ? 'text-white' : 'text-gray-900'}>{fmt(c.budget)}</p></div>
                 <div className="space-y-1 text-center"><p className="text-gray-400">Spent</p><p className="text-red-400">{fmt(s)}</p></div>
                 <div className="space-y-1 text-right"><p className="text-gray-400">Left</p><p className="text-emerald-500">{fmt(c.budget-s)}</p></div>
@@ -254,12 +245,13 @@ function NewTransactionView({ cats, accs, editingTx, isDark, onClose, onSave, on
     cat_id: editingTx?.cat_id || '', sub_name: editingTx?.sub_name || '', acc_id: editingTx?.acc_id || accs[0]?.id || '', 
     date: editingTx?.date || new Date().toISOString().split('T')[0] 
   });
+
   if (pk) return (
     <div className={`p-6 h-screen ${isDark ? 'bg-black' : 'bg-gray-50'} overflow-y-auto pb-32 no-scrollbar text-white text-left`}>
       <div className="flex justify-between items-center mb-10 pt-4"><h3 className="text-xs font-black uppercase text-gray-400 tracking-[0.3em] mx-auto text-center">Categorization</h3><button onClick={() => setPk(false)} className="p-2 absolute right-6 text-gray-500"><IconX /></button></div>
       {cats.map((cat: any) => (
-        <div key={cat.id} className="mb-8 px-2">
-          <button onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: ''}); setPk(false); }} className={`w-full text-left font-bold text-lg p-5 ${isDark ? 'bg-[#121212] border-white/5 text-white' : 'bg-white border-gray-200 text-gray-900'} border rounded-2xl flex items-center justify-between shadow-sm`}><span>{cat.icon} {cat.name}</span><span className="text-xs font-black bg-indigo-500/20 text-indigo-500 px-4 py-1.5 rounded-full uppercase">Select</span></button>
+        <div key={cat.id} className="mb-8 px-2 text-left">
+          <button onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: ''}); setPk(false); }} className={`w-full text-left font-bold text-lg p-5 ${isDark ? 'bg-[#121212] border-white/5 text-white' : 'bg-white border-gray-200 text-gray-900'} border rounded-2xl flex items-center justify-between shadow-sm`}><span>{cat.icon} {cat.name}</span><span className="text-xs font-black bg-indigo-500/20 text-indigo-400 px-4 py-1.5 rounded-full uppercase">Select</span></button>
           <div className="ml-12 mt-6 space-y-6">
             {cat.subs?.map((s: any, i: any) => (<button key={i} onClick={() => { setF({...f, cat_name: cat.name, cat_id: cat.id, sub_name: s}); setPk(false); }} className={`w-full text-left font-bold text-base flex items-center gap-3 leading-none ${isDark ? 'text-white/40' : 'text-gray-400'}`}> <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div> {s}</button>))}
           </div>
@@ -267,9 +259,10 @@ function NewTransactionView({ cats, accs, editingTx, isDark, onClose, onSave, on
       ))}
     </div>
   );
+
   return (
     <div className={`flex flex-col h-screen ${isDark ? 'bg-black' : 'bg-gray-50'} p-6 relative`}>
-      <div className="flex justify-between items-center mb-6 px-1 text-left"><h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{editingTx ? 'Edit Payment' : 'New Payment'}</h3><button onClick={onClose} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
+      <div className="flex justify-between items-center mb-6 px-1 text-left text-white"><h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{editingTx ? 'Edit Payment' : 'New Payment'}</h3><button onClick={onClose} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
       <div className="space-y-4 flex-1 overflow-y-auto no-scrollbar pb-32 text-left">
         <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-7 rounded-[2.5rem] border shadow-inner`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Value</p><div className="text-4xl font-black flex gap-3 text-indigo-500 tracking-tighter"><span>₹</span><input type="number" placeholder="0" value={f.amount} onChange={e => setF({...f, amount: e.target.value})} className="bg-transparent w-full outline-none" /></div></div>
         <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-5 rounded-2xl border`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Date</p><input type="date" value={f.date} onChange={e => setF({...f, date: e.target.value})} className={`bg-transparent w-full font-bold outline-none ${isDark ? 'text-white [color-scheme:dark]' : 'text-gray-900'}`} /></div>
@@ -287,16 +280,16 @@ function AccountsView({ accs, isDark, onBack, onEdit, onAdd }: any) {
   const total = accs.reduce((s:number, a:any) => s + Number(a.balance), 0);
   return (
     <div className="p-5 space-y-7 h-screen overflow-y-auto pb-40 no-scrollbar text-white text-left">
-      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>My Wallets</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
+      <div className="flex justify-between items-center px-1 font-bold text-2xl tracking-tight text-left text-white"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>My Wallets</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
       <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-xl'} p-8 rounded-[2.5rem] border text-center`}>
         <p className="text-xs font-bold text-indigo-500 uppercase tracking-[0.2em] mb-2">Total Net Balance</p>
         <h3 className={`text-4xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>{fmt(total)}</h3>
-        <div className="mt-8 space-y-4 px-2 text-left">
+        <div className="mt-8 space-y-4 px-2 text-left text-white">
            {accs.map((acc:any, i:number) => (
              <div key={acc.id} className="space-y-1.5 text-left text-white">
                 <div className="flex justify-between text-xs font-bold uppercase text-gray-500 tracking-widest"><span>{acc.name}</span><span>{Math.round((acc.balance/total)*100) || 0}%</span></div>
                 <div className="w-full h-2 bg-gray-200/30 rounded-full overflow-hidden shadow-sm">
-                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${(acc.balance/total)*100}%`, backgroundColor: CHART_COLORS[i % 5] }}></div>
+                  <div className="h-full rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(acc.balance/total)*100}%`, backgroundColor: CHART_COLORS[i % 5] }}></div>
                 </div>
              </div>
            ))}
@@ -319,16 +312,16 @@ function EditCategoryView({ cat, isDark, onBack, onUpdate, onDelete }: any) {
   const [n, setN] = useState(cat?.name || ''); const [b, setB] = useState(cat?.budget || 0); const [s, setS] = useState('');
   const handleAdd = () => { if (!s.trim()) return; (document.activeElement as HTMLElement)?.blur(); onUpdate(cat.id, { subs: [...(cat.subs||[]), s] }); setS(''); };
   return (
-    <div className="p-6 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar text-left">
+    <div className="p-6 space-y-6 h-screen overflow-y-auto pb-40 no-scrollbar text-left text-white">
       <div className="flex justify-between items-center font-bold text-xl px-1 tracking-tight text-white"><h2>Adjust Detail</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
-      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-5 rounded-2xl border space-y-1 text-left`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Label</p><input className={`bg-transparent w-full font-bold text-lg outline-none ${isDark ? 'text-white' : 'text-gray-900'}`} value={n} onChange={e => setN(e.target.value)} /></div>
-      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-5 rounded-2xl border space-y-1 text-left`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Limit</p><input type="number" className="bg-transparent w-full font-bold text-lg text-emerald-500 outline-none" value={b} onChange={e => setB(Number(e.target.value))} /></div>
-      <div className="space-y-3 px-1 text-left"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Subcategories</p>
-        <div className="space-y-2 text-left">{cat?.subs?.map((si: any, i: any) => (<div key={i} className={`${isDark ? 'bg-[#121212] border-white/5' : 'bg-white border-gray-100 shadow-sm'} p-4 rounded-2xl border flex justify-between items-center text-sm font-bold shadow-sm`}><span className={isDark ? 'text-white' : 'text-gray-900'}>{si}</span> <button onClick={() => onUpdate(cat.id, { subs: cat.subs.filter((_:any, idx:any) => idx !== i) })} className="p-1"><IconTrash /></button></div>))}</div>
-        <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} border flex gap-2 p-2 rounded-2xl`}><input className={`flex-1 bg-transparent p-3 outline-none font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`} placeholder="Add..." value={s} onChange={e => setS(e.target.value)} /><button onClick={handleAdd} className="w-11 h-11 bg-indigo-600 rounded-xl flex items-center justify-center active:scale-90 transition-all text-white"><IconPlus /></button></div>
+      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-5 rounded-2xl border space-y-1 text-left text-white`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1 text-left">Label</p><input className={`bg-transparent w-full font-bold text-lg outline-none ${isDark ? 'text-white' : 'text-gray-900'}`} value={n} onChange={e => setN(e.target.value)} /></div>
+      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-5 rounded-2xl border space-y-1 text-left text-white`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1 text-left">Limit</p><input type="number" className="bg-transparent w-full font-bold text-lg text-emerald-500 outline-none" value={b} onChange={e => setB(Number(e.target.value))} /></div>
+      <div className="space-y-3 px-1 text-left text-white"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Subcategories</p>
+        <div className="space-y-2 text-left text-white">{cat?.subs?.map((si: any, i: any) => (<div key={i} className={`${isDark ? 'bg-[#121212] border-white/5' : 'bg-white border-gray-100 shadow-sm'} p-4 rounded-2xl border flex justify-between items-center text-sm font-bold shadow-sm`}><span className={isDark ? 'text-white' : 'text-gray-900'}>{si}</span> <button onClick={() => onUpdate(cat.id, { subs: cat.subs.filter((_:any, idx:any) => idx !== i) })} className="p-1"><IconTrash /></button></div>))}</div>
+        <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} border flex gap-2 p-2 rounded-2xl shadow-inner`}><input className={`flex-1 bg-transparent p-3 outline-none font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`} placeholder="Add..." value={s} onChange={e => setS(e.target.value)} /><button onClick={handleAdd} className="w-11 h-11 bg-indigo-600 rounded-xl flex items-center justify-center active:scale-90 transition-all text-white shadow-lg shadow-indigo-500/20"><IconPlus /></button></div>
       </div>
       <div className="flex flex-col gap-3">
-        <button onClick={() => { onUpdate(cat.id, { name: n, budget: Number(b) }); onBack(); }} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black text-xl shadow-xl">Apply changes</button>
+        <button onClick={() => { onUpdate(cat.id, { name: n, budget: Number(b) }); onBack(); }} className="w-full py-5 bg-[#5D5FEF] text-white rounded-[2rem] font-black text-xl shadow-xl">Apply changes</button>
         <button onClick={() => onDelete(cat.id)} className="w-full py-3 text-red-500 bg-red-500/5 rounded-2xl font-black text-xs uppercase tracking-widest border border-red-500/10 flex items-center justify-center gap-2"> <IconTrash /> Remove Category</button>
       </div>
     </div>
@@ -338,19 +331,19 @@ function EditCategoryView({ cat, isDark, onBack, onUpdate, onDelete }: any) {
 function EditAccountView({ acc, isDark, onBack, onSave }: any) {
   const [n, setN] = useState(acc?.name || ''); const [b, setB] = useState(acc?.balance || 0);
   return (
-    <div className="p-6 space-y-6 text-left">
-      <div className="flex justify-between items-center font-bold px-1 tracking-tight text-left"><h2 className={isDark ? 'text-white' : 'text-gray-900'}>Source Adjust</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
-      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-6 rounded-[2rem] border space-y-2`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Name</p><input className={`bg-transparent w-full font-bold text-xl outline-none ${isDark ? 'text-white' : 'text-gray-900'}`} value={n} onChange={e => setN(e.target.value)} /></div>
-      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-6 rounded-[2rem] border space-y-2`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Balance</p><input type="number" className="bg-transparent w-full font-bold text-xl outline-none text-emerald-500" value={b} onChange={e => setB(Number(e.target.value))} /></div>
-      <button onClick={() => onSave(acc.id, n, b)} className="w-full py-5 bg-indigo-600 text-white rounded-[2.5rem] font-black text-xl shadow-xl active:scale-95 transition-all mt-4">Confirm Update</button>
+    <div className="p-6 space-y-6 text-left text-white">
+      <div className="flex justify-between items-center font-bold px-1 tracking-tight text-left text-white"><h2>Source Adjust</h2><button onClick={onBack} className={`p-2 rounded-full ${isDark ? 'bg-[#1C1C1E] text-white/50' : 'bg-white border-gray-100 text-gray-400 border shadow-sm'}`}><IconX /></button></div>
+      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-7 rounded-[2.5rem] border space-y-2 text-left text-white`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Name</p><input className={`bg-transparent w-full font-bold text-xl outline-none ${isDark ? 'text-white' : 'text-gray-900'}`} value={n} onChange={e => setN(e.target.value)} /></div>
+      <div className={`${isDark ? 'bg-[#1C1C1E] border-white/5' : 'bg-white border-gray-200 shadow-sm'} p-7 rounded-[2.5rem] border space-y-2 text-left text-white`}><p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Balance</p><input type="number" className="bg-transparent w-full font-bold text-xl outline-none text-emerald-500" value={b} onChange={e => setB(Number(e.target.value))} /></div>
+      <button onClick={() => onSave(acc.id, n, b)} className="w-full py-5 bg-[#5D5FEF] text-white rounded-[2.5rem] font-black text-xl shadow-xl active:scale-95 transition-all mt-4">Confirm Update</button>
     </div>
   );
 }
 
-function NavBtn({ label, icon, active, isDark, onClick }: {label: string, icon: string, active: boolean, isDark: boolean, onClick: () => void}) {
+function NavBtn({ label, icon, active, onClick }: {label: string, icon: string, active: boolean, onClick: () => void}) {
   return (
-    <button onClick={onClick} className={`flex flex-col items-center gap-1.5 transition-all ${active ? 'text-[#5D5FEF]' : 'text-gray-400'}`}>
-      <div className={`${active ? 'scale-110 opacity-100' : 'scale-100 opacity-60'} transition-all mb-0.5`}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={icon}/></svg></div>
+    <button onClick={onClick} className={`flex flex-col items-center gap-1.5 transition-all ${active ? 'text-[#5D5FEF]' : 'text-gray-500'}`}>
+      <div className={`${active ? 'scale-110 opacity-100' : 'scale-100 opacity-60'} mb-0.5 transition-all`}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={icon}/></svg></div>
       <span className="text-[10px] font-black uppercase tracking-tight leading-none">{label}</span>
     </button>
   );
