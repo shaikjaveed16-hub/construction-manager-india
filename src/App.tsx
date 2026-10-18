@@ -16,7 +16,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 // --- CONSTANTS ---
 const fmt = (v: number) => '₹' + Math.round(v || 0).toLocaleString('en-IN');
 const PETAL_COLORS = ['bg-indigo-500', 'bg-pink-500', 'bg-amber-500', 'bg-emerald-500', 'bg-sky-500'];
-const CHART_COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9'];
 
 // --- SVG ICONS ---
 const IconPlus = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
@@ -380,7 +379,7 @@ function EditAccountView({ acc, isDark, onBack, onSave }: any) {
   );
 }
 
-function NavBtn({ label, icon, active, onClick }: NavBtnProps) {
+function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} className={`flex flex-col items-center gap-1.5 transition-all ${active ? 'text-[#5D5FEF]' : 'text-gray-400'}`}>
       <div className={`${active ? 'scale-110 opacity-100' : 'scale-100 opacity-60'} mb-0.5 transition-all transition-all transition-all transition-all`}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={icon}/></svg></div>
