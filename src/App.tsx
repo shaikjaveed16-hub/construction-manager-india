@@ -15,6 +15,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- CONSTANTS ---
 const fmt = (v: number) => '₹' + Math.round(v || 0).toLocaleString('en-IN');
+const formatTxDate = (value: string) => {
+  if (!value) return '';
+  // Parse YYYY-MM-DD as local date to avoid timezone shifts.
+  const parts = value.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return value;
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+};
 const PETAL_COLORS = ['bg-indigo-500', 'bg-pink-500', 'bg-amber-500', 'bg-emerald-500', 'bg-sky-500'];
 
 // --- SVG ICONS ---
@@ -41,7 +49,7 @@ function TxRow({ t, catName, i, onClick, isDark }: {t: Transaction, catName: str
         <div className="text-left">
           <p className={`font-bold text-sm leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{catName}</p>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-gray-400'}`}>{t.date}</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-gray-400'}`}>{formatTxDate(t.date)}</span>
             <span className="w-1 h-1 rounded-full bg-gray-600"></span>
             <p className={`text-[10px] font-bold uppercase tracking-widest truncate max-w-[100px] ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
               {t.sub_name || t.note || 'Spend'}
@@ -116,7 +124,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-[#F3F4F6]'} font-sans flex justify-center transition-colors duration-300`}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap'); * { font-family: 'Google Sans', 'Product Sans', 'Google Sans Text', Roboto, Arial, sans-serif !important; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap'); * { font-family: 'Poppins', sans-serif !important; }`}</style>
       <div className={`w-full max-w-lg md:max-w-xl ${isDark ? 'bg-black border-white/5' : 'bg-[#F9FAFB] border-gray-200'} min-h-screen relative border-x pb-32 shadow-2xl overflow-x-hidden`}>
         <Suspense fallback={null}>
           {view === 'home' && <HomeView totals={totals} tx={data.tx} isDark={isDark} onLogout={() => supabase.auth.signOut()} onToggleTheme={() => setIsDark(!isDark)} onNew={() => { setEditingTx(null); setView('new-tx'); }} onEditTx={(t: Transaction) => {setEditingTx(t); setView('new-tx');}} />}
@@ -145,7 +153,7 @@ function LoginView({ onLogin, isDark }: {onLogin: (e: string, p: string) => void
   const [e, setE] = useState(''); const [p, setP] = useState('');
   return (
     <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-gray-50'} flex flex-col justify-center p-10 space-y-10`}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap'); * { font-family: 'Google Sans', 'Product Sans', 'Google Sans Text', Roboto, Arial, sans-serif !important; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap'); * { font-family: 'Poppins', sans-serif !important; }`}</style>
       <div className="text-center space-y-4">
         <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl">S</div>
         <h1 className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome back</h1>
