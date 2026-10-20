@@ -116,6 +116,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-[#F3F4F6]'} font-sans flex justify-center transition-colors duration-300`}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap'); * { font-family: 'Google Sans', 'Product Sans', 'Google Sans Text', Roboto, Arial, sans-serif !important; }`}</style>
       <div className={`w-full max-w-lg md:max-w-xl ${isDark ? 'bg-black border-white/5' : 'bg-[#F9FAFB] border-gray-200'} min-h-screen relative border-x pb-32 shadow-2xl overflow-x-hidden`}>
         <Suspense fallback={null}>
           {view === 'home' && <HomeView totals={totals} tx={data.tx} isDark={isDark} onLogout={() => supabase.auth.signOut()} onToggleTheme={() => setIsDark(!isDark)} onNew={() => { setEditingTx(null); setView('new-tx'); }} onEditTx={(t: Transaction) => {setEditingTx(t); setView('new-tx');}} />}
@@ -144,6 +145,7 @@ function LoginView({ onLogin, isDark }: {onLogin: (e: string, p: string) => void
   const [e, setE] = useState(''); const [p, setP] = useState('');
   return (
     <div className={`min-h-screen ${isDark ? 'bg-black' : 'bg-gray-50'} flex flex-col justify-center p-10 space-y-10`}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap'); * { font-family: 'Google Sans', 'Product Sans', 'Google Sans Text', Roboto, Arial, sans-serif !important; }`}</style>
       <div className="text-center space-y-4">
         <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl">S</div>
         <h1 className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome back</h1>
@@ -158,7 +160,11 @@ function LoginView({ onLogin, isDark }: {onLogin: (e: string, p: string) => void
   );
 }
 
-function HomeView({ total, spent, tx, onNew, onLogout, onToggleTheme, isDark, onEditTx, totals }: any) {
+function HomeView({ tx, onNew, onLogout, onToggleTheme, isDark, onEditTx, totals }: any) {
+  const budget = Number(totals?.budget || 0);
+  const spent = Number(totals?.spent || 0);
+  const balance = budget - spent;
+  const deficit = balance - Number(totals?.assets || 0);
   return (
     <div className="p-5 space-y-6 h-screen overflow-y-auto no-scrollbar pb-40 text-left">
       <div className="flex justify-between items-center py-2 text-left">
@@ -175,11 +181,20 @@ function HomeView({ total, spent, tx, onNew, onLogout, onToggleTheme, isDark, on
       <div className="relative overflow-hidden rounded-[2.5rem] p-7 bg-[#5D5FEF] shadow-2xl" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 15px, rgba(255,255,255,0.04) 15px, rgba(255,255,255,0.04) 16px)' }}>
         <div className="relative z-10 space-y-6 text-left text-white">
           <div className="flex justify-between items-center text-white/80 font-bold text-xs uppercase tracking-widest"><span>Overall Budget</span><IconEye /></div>
-          <h3 className="text-4xl font-black tracking-tighter text-white text-left">{fmt(total)}</h3>
-          <div className="pt-5 border-t border-white/10 space-y-3">
-            <div className="flex justify-between text-xs font-bold uppercase tracking-widest"><span className="text-white/60">Spent</span><span>{fmt(spent)}</span></div>
-            <div className="flex justify-between text-xs font-bold uppercase tracking-widest"><span className="text-white/60">Amount Left</span><span className="text-emerald-300 font-black">{fmt(total - spent)}</span></div>
-            <div className="flex justify-between text-xs font-bold uppercase tracking-widest pt-1 border-t border-white/5 opacity-80"><span className="text-white/60 font-bold">Funding Deficit</span><span className="text-red-100 font-black">{fmt(Math.max(0, total - totals.assets))}</span></div>
+          <h3 className="text-4xl font-black tracking-tighter text-white text-left">{fmt(budget)}</h3>
+          <div className="grid grid-cols-3 gap-3 pt-5 mt-2 text-left">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/60">Spent</p>
+              <p className="mt-1 text-base sm:text-lg font-black leading-tight break-words">{fmt(spent)}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/60">Balance</p>
+              <p className="mt-1 text-base sm:text-lg font-black leading-tight break-words">{fmt(balance)}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/60">Deficit</p>
+              <p className="mt-1 text-base sm:text-lg font-black leading-tight break-words">{fmt(deficit)}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -379,7 +394,7 @@ function EditAccountView({ acc, isDark, onBack, onSave }: any) {
   );
 }
 
-function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
+function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; isDark: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} className={`flex flex-col items-center gap-1.5 transition-all ${active ? 'text-[#5D5FEF]' : 'text-gray-400'}`}>
       <div className={`${active ? 'scale-110 opacity-100' : 'scale-100 opacity-60'} mb-0.5 transition-all transition-all transition-all transition-all`}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={icon}/></svg></div>
